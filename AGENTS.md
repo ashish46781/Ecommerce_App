@@ -12,7 +12,9 @@ basic SQL/MySQL. Do not assume deep knowledge of other backend concepts.
 
 Prioritize understanding and interview readiness over feature count or stack size.
 A lesson is complete when the feature works AND the user understands its important
-concepts. Track implementation separately from understanding that is still pending.
+concepts. Explain the important concepts fully and revisit confusion when it arises.
+Track implementation and concepts explained without claiming demonstrated mastery.
+Do not require a quiz, teach-back, or proof of understanding before continuing.
 
 ## Recover context before a lesson
 
@@ -35,9 +37,10 @@ concise project map, not a diary or another teaching-rules document.
 4. Run appropriate verification. Introduce automated tests when they solve a useful
    problem; do not add an entire test framework for a trivial setup step.
 5. Explain important code, engineering choices, and the actual request/data flow.
-6. Ask roughly 2-4 project-specific interview questions only for foundational,
-   important, tricky, commonly asked, or tradeoff-heavy topics. Avoid repetitive quizzes.
-7. Update PATH.md with implementation status, understanding status, next lesson,
+6. Teach interview-relevant reasoning, tradeoffs, and common mistakes directly.
+   Do not ask interview questions, quizzes, or "explain in your own words" checks
+   unless the user explicitly requests practice questions or assessment.
+7. Update PATH.md with implementation status, concepts explained, next lesson,
    introduced technologies, meaningful decisions, and deliberate technical debt.
 8. Verify the final project state and create or suggest a meaningful Git commit.
 

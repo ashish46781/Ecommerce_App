@@ -11,10 +11,10 @@ Stage 1 - Foundation.
 
 ## Current Lesson
 
-Lesson 1: Run a minimal FastAPI application and trace an HTTP request.
-Implementation reviewed and verified. Understanding is pending discussion of
-server versus application and HTTP method/path routing.
-Next implementation lesson: application configuration and environment variables.
+Lesson 2: Application configuration and environment variables.
+Implemented and verified; teaching covers typed settings, source priority,
+startup validation, and local `.env` files. No assessment gate.
+Next lesson: choose PostgreSQL or MySQL and configure a local database connection.
 
 ## Completed
 
@@ -25,11 +25,16 @@ Next implementation lesson: application configuration and environment variables.
 - [x] Lesson 1 verification: real HTTP checks for root JSON (200), documentation
   HTML (200), OpenAPI route definition, unknown route (404), and wrong method (405).
   Dependency compatibility and Python compilation checks passed.
+- [x] Lesson 1 explanation: server/application responsibilities and HTTP routing.
+- [x] Lesson 2 implementation: typed application name and debug flag in
+  `app/config.py`, FastAPI integration, `.env.example`, and an ignored local `.env`.
+- [x] Lesson 2 verification: defaults, dotenv loading, environment overrides,
+  boolean conversion, missing dotenv fallback, and invalid-value startup rejection.
+  Real HTTP checks confirmed the configured name in JSON and documentation;
+  existing route behavior, dependency compatibility, and compilation also passed.
 
 ## Next
 
-- [ ] Discuss Lesson 1 understanding before marking the learning milestone complete.
-- [ ] Lesson 2: Application configuration and environment variables.
 - [ ] Select PostgreSQL or MySQL and configure a local database connection.
 - [ ] Understand SQLAlchemy engine, session lifecycle, and request-scoped sessions.
 - [ ] Understand and implement the Product database model.
@@ -59,14 +64,19 @@ Split large stages into focused lessons and review the project after each stage.
 
 ## Concepts Learned
 
-No new concepts confirmed yet. Lesson 1 introduces or revisits virtual environments,
-server versus application, import targets, method/path routing, JSON serialization,
-and the distinction between 404 and 405 responses.
+- Lesson 1: virtual environments, server versus application, import targets,
+  method/path routing, JSON serialization, and 404 versus 405 responses.
+- Lesson 2: configuration versus application logic, process environments, `.env`
+  loading, type conversion/validation, source priority, startup settings lifetime,
+  debug versus reload, and keeping local configuration outside Git.
+
+These record teaching coverage, not assessed mastery.
 
 ## Technologies Introduced
 
 - Python 3.13.2 and a local `.venv`.
 - FastAPI 0.141.1 and Uvicorn 0.52.4.
+- Pydantic Settings 2.15.0; python-dotenv is its dependency for reading `.env` files.
 - pip, `requirements.txt`, Git, and `.gitignore`.
 - Pydantic is installed as a FastAPI dependency; schema design has not been taught.
 
@@ -97,6 +107,20 @@ Use `.venv` and invoke its Python explicitly in local commands.
 Reason: the machine's default `python` points to 3.10; an explicit interpreter avoids
 installing dependencies into or starting the server from the wrong environment.
 
+### Load typed settings once at startup
+
+Use one `Settings` class and one module-level instance in `app/config.py`.
+For the sources we use, process variables override `.env`, which overrides defaults.
+Reason: validate configuration before serving requests and reuse it without per-request
+file reads. Add more settings only when used. Debug defaults to false.
+
+### Keep local configuration outside Git
+
+Track `.env.example` with public defaults; ignore the actual `.env`.
+The `.env` path is relative to the working directory, so run from the repository root.
+Restart the server after changing configuration; Python reload need not watch `.env`.
+Reason: share setup instructions without committing machine-specific values or secrets.
+
 ## Technical Debt to Revisit
 
 - Direct dependencies are pinned; full transitive dependency locking is deferred
@@ -113,6 +137,11 @@ py -3.13 -m venv .venv
 .\.venv\Scripts\python.exe -m pip install -r requirements.txt
 .\.venv\Scripts\python.exe -m uvicorn app.main:app --reload
 ```
+
+On a fresh clone, optionally copy `.env.example` to `.env` before starting the API:
+`Copy-Item .env.example .env`. Do not overwrite an existing local `.env`.
+`APP_NAME` controls the API title and root message. `DEBUG` controls error tracebacks;
+keep it false for public use. A local `.env` with example defaults already exists.
 
 API: http://127.0.0.1:8000/ - interactive documentation: http://127.0.0.1:8000/docs.
 Use `--reload` for local development; it restarts the server after Python edits.

@@ -1,8 +1,10 @@
 from fastapi import FastAPI
 
-app = FastAPI(title="E-Commerce API")
+from app.config import settings
+
+app = FastAPI(title=settings.app_name, debug=settings.debug)
 
 
 @app.get("/")
 def read_root() -> dict[str, str]:
-    return {"message": "E-Commerce API"}
+    return {"message": settings.app_name}
