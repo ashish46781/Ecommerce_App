@@ -11,10 +11,11 @@ Stage 1 - Foundation.
 
 ## Current Lesson
 
-Lesson 3: Configure and verify a PostgreSQL database connection.
-Implemented and verified against local PostgreSQL 17.4 using a limited application
-role and application-owned database. No assessment gate.
-Next lesson: understand SQLAlchemy engine, session lifecycle, and request-scoped sessions.
+Lesson 4: SQLAlchemy engine, session lifecycle, and request-scoped sessions.
+Implemented and verified. Teaching covers session factories, unit of work,
+transaction ownership, dependency injection, concurrency boundaries, and cleanup.
+No assessment gate.
+Next lesson: understand and implement the Product database model.
 
 ## Completed
 
@@ -38,10 +39,13 @@ Next lesson: understand SQLAlchemy engine, session lifecycle, and request-scoped
 - [x] Lesson 3 verification: live `SELECT 1`, server/database/user identity,
   database ownership, restricted role privileges, password authentication,
   redacted URL rendering, dependency compatibility, compilation, and API behavior.
+- [x] Lesson 4 implementation: module-level `SessionFactory` and a `get_db()` yield
+  dependency that creates and closes one SQLAlchemy Session per FastAPI request.
+- [x] Lesson 4 verification: distinct sessions share the engine, execute real queries,
+  and return connections to the pool after successful and failed HTTP requests.
 
 ## Next
 
-- [ ] Understand SQLAlchemy engine, session lifecycle, and request-scoped sessions.
 - [ ] Understand and implement the Product database model.
 - [ ] Define Product request/response schemas with Pydantic.
 - [ ] Implement POST /products and understand commit and refresh.
@@ -77,6 +81,9 @@ Split large stages into focused lessons and review the project after each stage.
 - Lesson 3: database server versus client, connection components, PostgreSQL roles
   and ownership, least privilege, SQLAlchemy dialect/driver selection, lazy engine
   connections, connection context management, and secret redaction versus encryption.
+- Lesson 4: engine versus connection versus session, `sessionmaker`, unit of work,
+  identity map, automatic transaction start, request-scoped dependency injection,
+  session concurrency boundaries, explicit commit ownership, and guaranteed cleanup.
 
 These record teaching coverage, not assessed mastery.
 
@@ -143,6 +150,14 @@ Store database host, port, name, user, and password as settings. Build a
 Reason: programmatic URL construction handles special characters in passwords safely,
 the explicit dialect/driver is unambiguous, and sync access matches our current routes.
 The engine connects lazily; creating it alone does not prove the server is reachable.
+
+### Use one SQLAlchemy Session per request
+
+Keep the engine and `SessionFactory` at module scope. `get_db()` creates a new Session,
+yields it to one request, and closes it through a context manager after the request.
+Reason: a Session contains mutable ORM and transaction state and is unsafe to share
+across concurrent requests. The dependency does not commit automatically; each write
+operation owns its commit decision, while cleanup rolls back unfinished work.
 
 ## Technical Debt to Revisit
 
