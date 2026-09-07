@@ -13,11 +13,11 @@ Stage 1 - Foundation.
 
 ## Current Lesson
 
-Lesson 4: SQLAlchemy engine, session lifecycle, and request-scoped sessions.
-Implemented and verified. Teaching covers session factories, unit of work,
-transaction ownership, dependency injection, concurrency boundaries, and cleanup.
-No assessment gate.
-Next lesson: understand and implement the Product database model.
+Lesson 5: Product SQLAlchemy model and first application table.
+Implemented and verified. Teaching covers declarative mapping, metadata, columns,
+database-generated primary keys, nullability, exact numeric money, and the boundary
+between ORM models and API schemas. No assessment gate.
+Next lesson: define Product request and response schemas with Pydantic.
 
 ## Completed
 
@@ -45,10 +45,13 @@ Next lesson: understand and implement the Product database model.
   dependency that creates and closes one SQLAlchemy Session per FastAPI request.
 - [x] Lesson 4 verification: distinct sessions share the engine, execute real queries,
   and return connections to the pool after successful and failed HTTP requests.
+- [x] Lesson 5 implementation: shared declarative `Base`, a focused `Product` model,
+  and a temporary, repeatable command for creating the `products` table.
+- [x] Lesson 5 verification: PostgreSQL column types, nullability, identity primary
+  key, repeatable table creation, and an ORM insert/load/rollback cycle.
 
 ## Next
 
-- [ ] Understand and implement the Product database model.
 - [ ] Define Product request/response schemas with Pydantic.
 - [ ] Implement POST /products and understand commit and refresh.
 - [ ] Implement product list/detail endpoints, then update/delete in small lessons.
@@ -86,6 +89,10 @@ Split large stages into focused lessons and review the project after each stage.
 - Lesson 4: engine versus connection versus session, `sessionmaker`, unit of work,
   identity map, automatic transaction start, request-scoped dependency injection,
   session concurrency boundaries, explicit commit ownership, and guaranteed cleanup.
+- Lesson 5: declarative ORM mapping, `Base` and metadata, tables versus model classes,
+  rows versus objects, columns versus attributes, primary keys, identity generation,
+  nullability inferred from `Mapped` annotations, `Numeric`/`Decimal` for money,
+  `create_all()` limitations, and ORM models versus API schemas.
 
 These record teaching coverage, not assessed mastery.
 
@@ -100,7 +107,7 @@ These record teaching coverage, not assessed mastery.
 
 ## Postponed Until Needed
 
-- SQLAlchemy and Pydantic schema design: at the relevant foundation lessons.
+- Pydantic request and response schema design: in the next foundation lesson.
 - Authentication/JWT and RBAC: after product/database foundations.
 - Alembic: when evolving an existing schema makes migrations useful.
 - pytest and test database architecture: when meaningful behavior needs protection.
@@ -161,13 +168,30 @@ Reason: a Session contains mutable ORM and transaction state and is unsafe to sh
 across concurrent requests. The dependency does not commit automatically; each write
 operation owns its commit decision, while cleanup rolls back unfinished work.
 
+### Start Product with its essential persistence fields
+
+Map `Product` to `products` with an identity integer primary key, required name,
+optional description, exact `NUMERIC(10, 2)` price, and integer stock. Use Python
+`Decimal` for prices to avoid binary floating-point rounding. Category relationships,
+timestamps, and business constraints will be introduced when their lessons can explain
+the problems they solve.
+
+### Bootstrap the first table before introducing migrations
+
+Use `Base.metadata.create_all()` through `python -m app.create_tables` for the first
+table. It can create a missing table and can be rerun, but it does not modify an
+existing table to match later model changes. Replace this bootstrap workflow with
+Alembic when the schema begins evolving.
+
 ## Technical Debt to Revisit
 
 - Direct dependencies are pinned; full transitive dependency locking is deferred
   until reproducible CI/deployment setup. No pytest suite yet; first behavior was
   verified with temporary standard-library HTTP checks.
-- Database schema creation is still manual because there are no application tables.
-  Introduce Alembic when real schema evolution makes migrations useful.
+- `create_all()` can create missing tables but cannot migrate an existing schema.
+  Introduce Alembic when the Product schema or relationships begin evolving.
+- Product price and stock do not yet have database `CHECK` constraints; add and teach
+  those with database constraints in Stage 2. Category and timestamps are also deferred.
 
 ## Local Commands
 
@@ -177,6 +201,7 @@ virtual environment's interpreter explicitly.
 ```powershell
 py -3.13 -m venv .venv
 .\.venv\Scripts\python.exe -m pip install -r requirements.txt
+.\.venv\Scripts\python.exe -m app.create_tables
 .\.venv\Scripts\python.exe -m uvicorn app.main:app --reload
 ```
 
