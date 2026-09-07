@@ -1,6 +1,7 @@
 from typing import Annotated
 
 from fastapi import Depends, FastAPI, status
+from sqlalchemy import select
 from sqlalchemy.orm import Session
 
 from app.config import settings
@@ -14,6 +15,14 @@ app = FastAPI(title=settings.app_name, debug=settings.debug)
 @app.get("/")
 def read_root() -> dict[str, str]:
     return {"message": settings.app_name}
+
+
+@app.get("/products", response_model=list[ProductResponse])
+def list_products(
+    session: Annotated[Session, Depends(get_db)],
+) -> list[Product]:
+    statement = select(Product).order_by(Product.id)
+    return list(session.scalars(statement).all())
 
 
 @app.post(

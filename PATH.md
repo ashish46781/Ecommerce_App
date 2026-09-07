@@ -13,11 +13,11 @@ Stage 1 - Foundation.
 
 ## Current Lesson
 
-Lesson 7: create products through POST /products.
-Implemented and verified. Teaching covers request handling, dependency injection,
-the ORM object lifecycle, flush/commit/refresh, transaction durability, response
-filtering, and HTTP 201 semantics. No assessment gate.
-Next lesson: implement product list and detail reads in focused steps.
+Lesson 8: list products through GET /products.
+Implemented and verified. Teaching covers collection resources, SQLAlchemy 2 select
+statements, statement construction versus execution, scalar ORM results, response
+lists, empty results, and deterministic ordering. No assessment gate.
+Next lesson: implement GET /products/{product_id} and not-found handling.
 
 ## Completed
 
@@ -58,10 +58,14 @@ Next lesson: implement product list and detail reads in focused steps.
   201 response.
 - [x] Lesson 7 verification: live HTTP success and validation failures, OpenAPI request
   and response contracts, PostgreSQL persistence, route semantics, and session cleanup.
+- [x] Lesson 8 implementation: GET /products executes an ordered ORM select and returns
+  every Product through a list of `ProductResponse` objects.
+- [x] Lesson 8 verification: live empty and populated responses, ascending ID order,
+  exact response fields, existing POST behavior, OpenAPI, and connection cleanup.
 
 ## Next
 
-- [ ] Implement product list/detail endpoints, then update/delete in small lessons.
+- [ ] Implement the product detail endpoint, then update/delete in small lessons.
 - [ ] Introduce Category, then its relationship with Product in Stage 2.
 
 ## Stage Roadmap
@@ -108,6 +112,10 @@ Split large stages into focused lessons and review the project after each stage.
   `Annotated` and `Depends`, Pydantic-to-ORM conversion, transient and pending objects,
   automatic flush before commit, transaction durability, expiration and refresh,
   response-model filtering, 201 Created, and identity values that may contain gaps.
+- Lesson 8: collection endpoints, SQL `SELECT`, SQLAlchemy statement objects,
+  `Session.scalars()`, scalar values versus result rows, materializing results with
+  `all()`, list response models, empty-list semantics, explicit `ORDER BY`, and read-only
+  request transactions that require no commit.
 
 These record teaching coverage, not assessed mastery.
 
@@ -215,6 +223,13 @@ and returns the ORM object through `ProductResponse` with HTTP 201 Created.
 Reason: the endpoint is currently short enough to show the full write flow clearly.
 The write operation owns its commit; the session dependency owns resource cleanup.
 
+### Return product collections in deterministic ID order
+
+GET /products executes `select(Product).order_by(Product.id)` through
+`Session.scalars()` and returns a `list[ProductResponse]`. Return HTTP 200 with `[]`
+when no rows match. Reason: clients receive one predictable response shape, and explicit
+ordering avoids relying on PostgreSQL's unspecified natural row order.
+
 ## Technical Debt to Revisit
 
 - Direct dependencies are pinned; full transitive dependency locking is deferred
@@ -227,6 +242,8 @@ The write operation owns its commit; the session dependency owns resource cleanu
 - Product creation is intentionally unauthenticated until users, authentication, and
   seller/admin authorization are introduced. Add a `Location` response header after a
   product-detail endpoint provides a real URL for the newly created resource.
+- GET /products currently loads every matching row into memory. Add limit/offset or
+  cursor pagination before the product collection can grow large.
 
 ## Local Commands
 

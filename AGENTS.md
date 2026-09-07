@@ -29,14 +29,16 @@ concise project map, not a diary or another teaching-rules document.
 
 ## Teaching cycle
 
-1. Teach before writing code: explain the actual problem, why the concept exists,
-   how it works, and where it fits in this project.
+1. Work out the actual problem, why the concept exists, how it works, and where it
+   fits before writing code. Keep this reasoning internal rather than teaching it
+   through progress updates.
 2. Implement one coherent topic yourself, in a small, reviewable change.
 3. Review the implementation for correctness, security, validation, error handling,
    database assumptions, performance concerns, and unnecessary complexity. Fix issues.
 4. Run appropriate verification. Introduce automated tests when they solve a useful
    problem; do not add an entire test framework for a trivial setup step.
-5. Explain important code, engineering choices, and the actual request/data flow.
+5. After implementation and verification, explain important terms, code, engineering
+   choices, and the actual request/data flow in detail and in easy-to-understand language.
 6. Teach interview-relevant reasoning, tradeoffs, and common mistakes directly.
    Do not ask interview questions, quizzes, or "explain in your own words" checks
    unless the user explicitly requests practice questions or assessment.
@@ -52,6 +54,10 @@ Explain why pieces exist and interact, rather than mechanically narrating lines.
 Split large topics into lessons. Answer interruptions properly, then return to the
 current lesson. Do not repeatedly ask for permission to do already authorized work.
 Ask only when a material decision cannot reasonably be inferred.
+
+Keep intermediate commentary short and operational: state what is being worked on,
+what passed or failed, and what remains. Save the full lesson for the final response,
+where new terms should be defined plainly and connected to concrete project examples.
 
 ## Implementation and architecture
 
