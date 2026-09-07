@@ -13,11 +13,11 @@ Stage 1 - Foundation.
 
 ## Current Lesson
 
-Lesson 5: Product SQLAlchemy model and first application table.
-Implemented and verified. Teaching covers declarative mapping, metadata, columns,
-database-generated primary keys, nullability, exact numeric money, and the boundary
-between ORM models and API schemas. No assessment gate.
-Next lesson: define Product request and response schemas with Pydantic.
+Lesson 6: Product request and response schemas with Pydantic.
+Implemented and verified. Teaching covers API data boundaries, parsing, validation,
+serialization, required versus nullable fields, field constraints, strict values,
+input/output separation, and conversion from ORM objects. No assessment gate.
+Next lesson: implement POST /products and understand commit and refresh.
 
 ## Completed
 
@@ -49,10 +49,13 @@ Next lesson: define Product request and response schemas with Pydantic.
   and a temporary, repeatable command for creating the `products` table.
 - [x] Lesson 5 verification: PostgreSQL column types, nullability, identity primary
   key, repeatable table creation, and an ORM insert/load/rollback cycle.
+- [x] Lesson 6 implementation: shared Product fields, a creation-input schema without
+  `id`, and a response schema that can read SQLAlchemy object attributes.
+- [x] Lesson 6 verification: valid parsing and serialization, generated JSON Schema,
+  ORM-to-response conversion, and rejection of invalid, extra, or misleading values.
 
 ## Next
 
-- [ ] Define Product request/response schemas with Pydantic.
 - [ ] Implement POST /products and understand commit and refresh.
 - [ ] Implement product list/detail endpoints, then update/delete in small lessons.
 - [ ] Introduce Category, then its relationship with Product in Stage 2.
@@ -93,6 +96,10 @@ Split large stages into focused lessons and review the project after each stage.
   rows versus objects, columns versus attributes, primary keys, identity generation,
   nullability inferred from `Mapped` annotations, `Numeric`/`Decimal` for money,
   `create_all()` limitations, and ORM models versus API schemas.
+- Lesson 6: schemas as API boundaries, untrusted input, validation versus parsing,
+  serialization, required versus nullable fields, `Field` constraints, strict versus
+  coercive parsing, rejecting extra fields, input/output schema separation, JSON Schema,
+  and `from_attributes` for converting SQLAlchemy objects to responses.
 
 These record teaching coverage, not assessed mastery.
 
@@ -103,11 +110,10 @@ These record teaching coverage, not assessed mastery.
 - Pydantic Settings 2.15.0; python-dotenv is its dependency for reading `.env` files.
 - PostgreSQL 17.4, SQLAlchemy 2.0.52, and Psycopg 3.2.10.
 - pip, `requirements.txt`, Git, and `.gitignore`.
-- Pydantic is installed as a FastAPI dependency; schema design has not been taught.
+- Pydantic 2.13.5 now directly defines the Product API schemas.
 
 ## Postponed Until Needed
 
-- Pydantic request and response schema design: in the next foundation lesson.
 - Authentication/JWT and RBAC: after product/database foundations.
 - Alembic: when evolving an existing schema makes migrations useful.
 - pytest and test database architecture: when meaningful behavior needs protection.
@@ -182,6 +188,16 @@ Use `Base.metadata.create_all()` through `python -m app.create_tables` for the f
 table. It can create a missing table and can be rerun, but it does not modify an
 existing table to match later model changes. Replace this bootstrap workflow with
 Alembic when the schema begins evolving.
+
+### Use separate Product input and output schemas
+
+Keep shared public fields in `ProductBase`. Accept creation data through
+`ProductCreate`, which has no server-generated `id`, and serialize ORM objects through
+`ProductResponse`, which includes `id` and enables `from_attributes`. Strip surrounding
+string whitespace, reject unexpected fields, require a positive price that fits the
+database decimal, and require non-negative stock as a strict JSON integer.
+Reason: clients should receive clear validation errors before database work begins,
+and response fields should be an explicit public contract rather than every ORM field.
 
 ## Technical Debt to Revisit
 
