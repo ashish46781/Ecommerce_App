@@ -83,6 +83,9 @@ Optimize only for observed or realistic needs; explain the problem and tradeoffs
 Use Git throughout. Before committing, review the diff, run relevant checks, update
 PATH.md, and exclude unrelated changes. Use concise messages such as
 `feat: add product creation endpoint`. Do not invent author identity or rewrite history.
+Push verified milestone commits to the `origin` GitHub repository after each meaningful
+lesson or important stage so the remote portfolio stays current. Never force-push or
+overwrite remote history unless the user explicitly requests it.
 
 After each major stage, briefly review learning, features, code quality, technical
 debt, roadmap accuracy, and unnecessary complexity. Add documentation, migrations,

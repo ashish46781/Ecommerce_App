@@ -5,6 +5,8 @@
 Build and understand a production-style FastAPI e-commerce and order-management
 backend suitable for a strong fresher portfolio and backend interviews.
 
+Repository: https://github.com/ashish46781/Ecommerce_App
+
 ## Current Stage
 
 Stage 1 - Foundation.
