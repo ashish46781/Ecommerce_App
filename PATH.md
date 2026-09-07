@@ -13,11 +13,11 @@ Stage 1 - Foundation.
 
 ## Current Lesson
 
-Lesson 6: Product request and response schemas with Pydantic.
-Implemented and verified. Teaching covers API data boundaries, parsing, validation,
-serialization, required versus nullable fields, field constraints, strict values,
-input/output separation, and conversion from ORM objects. No assessment gate.
-Next lesson: implement POST /products and understand commit and refresh.
+Lesson 7: create products through POST /products.
+Implemented and verified. Teaching covers request handling, dependency injection,
+the ORM object lifecycle, flush/commit/refresh, transaction durability, response
+filtering, and HTTP 201 semantics. No assessment gate.
+Next lesson: implement product list and detail reads in focused steps.
 
 ## Completed
 
@@ -53,10 +53,14 @@ Next lesson: implement POST /products and understand commit and refresh.
   `id`, and a response schema that can read SQLAlchemy object attributes.
 - [x] Lesson 6 verification: valid parsing and serialization, generated JSON Schema,
   ORM-to-response conversion, and rejection of invalid, extra, or misleading values.
+- [x] Lesson 7 implementation: POST /products validates input, creates and commits a
+  Product through the request-scoped Session, refreshes it, and returns a filtered
+  201 response.
+- [x] Lesson 7 verification: live HTTP success and validation failures, OpenAPI request
+  and response contracts, PostgreSQL persistence, route semantics, and session cleanup.
 
 ## Next
 
-- [ ] Implement POST /products and understand commit and refresh.
 - [ ] Implement product list/detail endpoints, then update/delete in small lessons.
 - [ ] Introduce Category, then its relationship with Product in Stage 2.
 
@@ -100,6 +104,10 @@ Split large stages into focused lessons and review the project after each stage.
   serialization, required versus nullable fields, `Field` constraints, strict versus
   coercive parsing, rejecting extra fields, input/output schema separation, JSON Schema,
   and `from_attributes` for converting SQLAlchemy objects to responses.
+- Lesson 7: FastAPI path operations, request-body recognition, dependency injection with
+  `Annotated` and `Depends`, Pydantic-to-ORM conversion, transient and pending objects,
+  automatic flush before commit, transaction durability, expiration and refresh,
+  response-model filtering, 201 Created, and identity values that may contain gaps.
 
 These record teaching coverage, not assessed mastery.
 
@@ -199,6 +207,14 @@ database decimal, and require non-negative stock as a strict JSON integer.
 Reason: clients should receive clear validation errors before database work begins,
 and response fields should be an explicit public contract rather than every ORM field.
 
+### Keep product creation and its transaction explicit
+
+POST /products converts validated `ProductCreate` data into a `Product`, adds it to the
+request-scoped Session, commits the transaction, refreshes database-generated state,
+and returns the ORM object through `ProductResponse` with HTTP 201 Created.
+Reason: the endpoint is currently short enough to show the full write flow clearly.
+The write operation owns its commit; the session dependency owns resource cleanup.
+
 ## Technical Debt to Revisit
 
 - Direct dependencies are pinned; full transitive dependency locking is deferred
@@ -208,6 +224,9 @@ and response fields should be an explicit public contract rather than every ORM 
   Introduce Alembic when the Product schema or relationships begin evolving.
 - Product price and stock do not yet have database `CHECK` constraints; add and teach
   those with database constraints in Stage 2. Category and timestamps are also deferred.
+- Product creation is intentionally unauthenticated until users, authentication, and
+  seller/admin authorization are introduced. Add a `Location` response header after a
+  product-detail endpoint provides a real URL for the newly created resource.
 
 ## Local Commands
 
