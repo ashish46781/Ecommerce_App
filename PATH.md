@@ -13,11 +13,11 @@ Stage 1 - Foundation.
 
 ## Current Lesson
 
-Lesson 8: list products through GET /products.
-Implemented and verified. Teaching covers collection resources, SQLAlchemy 2 select
-statements, statement construction versus execution, scalar ORM results, response
-lists, empty results, and deterministic ordering. No assessment gate.
-Next lesson: implement GET /products/{product_id} and not-found handling.
+Lesson 9: read one product through GET /products/{product_id}.
+Implemented and verified. Teaching covers member resources, path parameters,
+parsing and range validation, primary-key lookup, 404 handling, `HTTPException`,
+and linking a 201 response to its created resource. No assessment gate.
+Next lesson: implement product updates with PUT.
 
 ## Completed
 
@@ -62,10 +62,14 @@ Next lesson: implement GET /products/{product_id} and not-found handling.
   every Product through a list of `ProductResponse` objects.
 - [x] Lesson 8 verification: live empty and populated responses, ascending ID order,
   exact response fields, existing POST behavior, OpenAPI, and connection cleanup.
+- [x] Lesson 9 implementation: a validated product-ID path parameter, primary-key
+  lookup with `Session.get()`, a safe 404 response, and a creation `Location` header.
+- [x] Lesson 9 verification: live 200, 404, and 422 responses, OpenAPI parameter and
+  error contracts, a resolvable `Location` header, unchanged data, and session cleanup.
 
 ## Next
 
-- [ ] Implement the product detail endpoint, then update/delete in small lessons.
+- [ ] Implement product update, then delete, in separate lessons.
 - [ ] Introduce Category, then its relationship with Product in Stage 2.
 
 ## Stage Roadmap
@@ -116,6 +120,10 @@ Split large stages into focused lessons and review the project after each stage.
   `Session.scalars()`, scalar values versus result rows, materializing results with
   `all()`, list response models, empty-list semantics, explicit `ORDER BY`, and read-only
   request transactions that require no commit.
+- Lesson 9: collection versus member resources, dynamic path segments, path parsing,
+  numeric range validation, 422 versus 404, primary-key lookup with `Session.get()`,
+  identity-map lookup behavior, `None` as a missing result, raising `HTTPException`,
+  documenting error responses, and `Location` headers for newly created resources.
 
 These record teaching coverage, not assessed mastery.
 
@@ -230,6 +238,14 @@ GET /products executes `select(Product).order_by(Product.id)` through
 when no rows match. Reason: clients receive one predictable response shape, and explicit
 ordering avoids relying on PostgreSQL's unspecified natural row order.
 
+### Use primary-key lookup and a clear not-found response
+
+GET /products/{product_id} accepts only positive PostgreSQL `INTEGER` values, uses
+`Session.get(Product, product_id)`, and raises a generic 404 when no row exists.
+Reason: `Session.get()` states the primary-key intent directly and can reuse an object
+already in the Session identity map. Invalid ID syntax or range receives 422, while a
+valid but absent ID receives 404. POST /products now links to this route with `Location`.
+
 ## Technical Debt to Revisit
 
 - Direct dependencies are pinned; full transitive dependency locking is deferred
@@ -240,8 +256,7 @@ ordering avoids relying on PostgreSQL's unspecified natural row order.
 - Product price and stock do not yet have database `CHECK` constraints; add and teach
   those with database constraints in Stage 2. Category and timestamps are also deferred.
 - Product creation is intentionally unauthenticated until users, authentication, and
-  seller/admin authorization are introduced. Add a `Location` response header after a
-  product-detail endpoint provides a real URL for the newly created resource.
+  seller/admin authorization are introduced.
 - GET /products currently loads every matching row into memory. Add limit/offset or
   cursor pagination before the product collection can grow large.
 
