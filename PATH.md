@@ -262,14 +262,22 @@ valid but absent ID receives 404. POST /products now links to this route with `L
 
 ## Local Commands
 
-Run from the repository root in PowerShell; activation is optional when using the
-virtual environment's interpreter explicitly.
+Run from the repository root in PowerShell.
+
+First-time setup:
 
 ```powershell
 py -3.13 -m venv .venv
-.\.venv\Scripts\python.exe -m pip install -r requirements.txt
-.\.venv\Scripts\python.exe -m app.create_tables
-.\.venv\Scripts\python.exe -m uvicorn app.main:app --reload
+.\.venv\Scripts\Activate.ps1
+python -m pip install -r requirements.txt
+python -m app.create_tables
+```
+
+Normal development after opening a new terminal:
+
+```powershell
+.\.venv\Scripts\Activate.ps1
+uvicorn app.main:app --reload
 ```
 
 On a fresh clone, optionally copy `.env.example` to `.env` before starting the API:

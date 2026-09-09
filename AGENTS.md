@@ -59,6 +59,11 @@ Keep intermediate commentary short and operational: state what is being worked o
 what passed or failed, and what remains. Save the full lesson for the final response,
 where new terms should be defined plainly and connected to concrete project examples.
 
+For commands the user runs in an interactive PowerShell terminal, prefer activating
+`.venv` first and then using normal `python`, `pip`, and `uvicorn` commands. Agent-run
+automation may use the explicit `.venv` interpreter because each command can run in a
+fresh shell where a previous activation would not persist.
+
 ## Implementation and architecture
 
 Write short, straightforward, readable Python appropriate for a junior developer.
