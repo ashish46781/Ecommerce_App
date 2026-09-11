@@ -9,14 +9,15 @@ Repository: https://github.com/ashish46781/Ecommerce_App
 
 ## Current Stage
 
-Stage 1 - Foundation.
+Stage 1 - Foundation: complete.
+Next stage: Stage 2 - Database design.
 
 ## Current Lesson
 
-Lesson 10: update one product through PUT /products/{product_id}.
-Implemented and verified. Teaching covers full-resource replacement, update input
-contracts, idempotency, ORM change tracking, committing updates, and preserving a
-resource identity. No assessment gate. Next lesson: delete a product.
+Lesson 11: delete one product through DELETE /products/{product_id}.
+Implemented and verified. Teaching covers deletion state, DELETE idempotency,
+transactional hard deletion, empty 204 responses, and future referential-integrity
+decisions. Stage 1 review complete. Next lesson: introduce Category in Stage 2.
 
 ## Completed
 
@@ -71,15 +72,24 @@ resource identity. No assessment gate. Next lesson: delete a product.
 - [x] Lesson 10 verification: live 200, 404, and 422 responses, repeated identical PUT
   behavior, GET-visible and PostgreSQL-visible persistence, OpenAPI contracts, and
   temporary-data cleanup.
+- [x] Lesson 11 implementation: DELETE /products/{product_id} validates the ID, loads
+  the Product, schedules its row for deletion, commits, returns an empty HTTP 204,
+  and safely reports a missing Product with 404.
+- [x] Lesson 11 verification: live 204, 404, and 422 responses, an empty success body,
+  GET/list/database confirmation of removal, repeated DELETE behavior, OpenAPI
+  contracts, and restoration of the original database row count.
+- [x] Stage 1 review: application setup, typed configuration, PostgreSQL integration,
+  request-scoped sessions, Product mapping and schemas, and complete CRUD all work.
+  The single-module design remains proportionate; planned debt stays on the roadmap.
 
 ## Next
 
-- [ ] Implement product deletion.
 - [ ] Introduce Category, then its relationship with Product in Stage 2.
 
 ## Stage Roadmap
 
 1. Foundation: application setup, configuration, database, SQLAlchemy, schemas, CRUD.
+   **Complete.**
 2. Database design: keys, constraints, Category-to-Product relationship, useful indexes.
 3. Users and authentication: User, password hashing, registration, login, JWT verification.
 4. Authorization: customer/seller/admin roles, permissions, and ownership checks.
@@ -133,6 +143,9 @@ Split large stages into focused lessons and review the project after each stage.
   input schemas, required update fields, resource identity versus mutable state,
   SQLAlchemy attribute change tracking, UPDATE on commit, refresh after a write,
   idempotent intended state, and PUT versus PATCH semantics.
+- Lesson 11: DELETE resource semantics, hard deletion, SQLAlchemy's deleted state,
+  transaction commit for durable removal, 204 No Content, empty response bodies,
+  repeated DELETE behavior, and future foreign-key and historical-record concerns.
 
 These record teaching coverage, not assessed mastery.
 
@@ -156,6 +169,8 @@ These record teaching coverage, not assessed mastery.
 - CI/CD, deployment, and the full professional README: as the application matures.
 - Refresh tokens: after access-token authentication is understood and a need appears.
 - PATCH and partial-update schemas: after a real need for partial product updates.
+- Product archival or soft deletion: when relationships or history-retention rules
+  make permanent row removal inappropriate.
 - Service/repository layers: only if actual code complexity warrants them.
 
 ## Important Decisions
@@ -266,6 +281,15 @@ PUT clear semantics, explicit assignment limits changes to approved fields, and 
 the same valid request repeatedly leaves the resource in the same intended state.
 Partial PATCH behavior is deferred until it solves a concrete client need.
 
+### Return 204 after a successful hard delete
+
+DELETE /products/{product_id} loads the existing Product, passes it to
+`Session.delete()`, commits the transaction, and returns HTTP 204 with no body. A valid
+but missing ID returns 404. Reason: the resource representation no longer exists after
+successful deletion, and an empty response communicates that the requested removal is
+complete. Hard deletion is sufficient while Product has no relationships; deletion,
+restriction, and archival rules must be revisited before orders depend on Product rows.
+
 ## Technical Debt to Revisit
 
 - Direct dependencies are pinned; full transitive dependency locking is deferred
@@ -275,8 +299,10 @@ Partial PATCH behavior is deferred until it solves a concrete client need.
   Introduce Alembic when the Product schema or relationships begin evolving.
 - Product price and stock do not yet have database `CHECK` constraints; add and teach
   those with database constraints in Stage 2. Category and timestamps are also deferred.
-- Product creation is intentionally unauthenticated until users, authentication, and
-  seller/admin authorization are introduced.
+- Product write operations are intentionally unauthenticated until users,
+  authentication, and seller/admin authorization are introduced.
+- Product deletion currently removes the row permanently. Revisit foreign-key policies,
+  order-history preservation, and archival before orders reference Product rows.
 - GET /products currently loads every matching row into memory. Add limit/offset or
   cursor pagination before the product collection can grow large.
 

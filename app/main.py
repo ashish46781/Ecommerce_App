@@ -70,6 +70,27 @@ def update_product(
     return product
 
 
+@app.delete(
+    "/products/{product_id}",
+    status_code=status.HTTP_204_NO_CONTENT,
+    responses={status.HTTP_404_NOT_FOUND: {"description": "Product not found"}},
+)
+def delete_product(
+    product_id: Annotated[int, Path(gt=0, le=2_147_483_647)],
+    session: Annotated[Session, Depends(get_db)],
+) -> Response:
+    product = session.get(Product, product_id)
+    if product is None:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="Product not found",
+        )
+
+    session.delete(product)
+    session.commit()
+    return Response(status_code=status.HTTP_204_NO_CONTENT)
+
+
 @app.post(
     "/products",
     response_model=ProductResponse,
