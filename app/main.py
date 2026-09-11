@@ -7,7 +7,7 @@ from sqlalchemy.orm import Session
 from app.config import settings
 from app.database import get_db
 from app.models import Product
-from app.schemas import ProductCreate, ProductResponse
+from app.schemas import ProductCreate, ProductResponse, ProductUpdate
 
 app = FastAPI(title=settings.app_name, debug=settings.debug)
 
@@ -40,6 +40,33 @@ def get_product(
             status_code=status.HTTP_404_NOT_FOUND,
             detail="Product not found",
         )
+    return product
+
+
+@app.put(
+    "/products/{product_id}",
+    response_model=ProductResponse,
+    responses={status.HTTP_404_NOT_FOUND: {"description": "Product not found"}},
+)
+def update_product(
+    product_id: Annotated[int, Path(gt=0, le=2_147_483_647)],
+    product_data: ProductUpdate,
+    session: Annotated[Session, Depends(get_db)],
+) -> Product:
+    product = session.get(Product, product_id)
+    if product is None:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="Product not found",
+        )
+
+    product.name = product_data.name
+    product.description = product_data.description
+    product.price = product_data.price
+    product.stock = product_data.stock
+
+    session.commit()
+    session.refresh(product)
     return product
 
 

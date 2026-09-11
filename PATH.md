@@ -13,11 +13,10 @@ Stage 1 - Foundation.
 
 ## Current Lesson
 
-Lesson 9: read one product through GET /products/{product_id}.
-Implemented and verified. Teaching covers member resources, path parameters,
-parsing and range validation, primary-key lookup, 404 handling, `HTTPException`,
-and linking a 201 response to its created resource. No assessment gate.
-Next lesson: implement product updates with PUT.
+Lesson 10: update one product through PUT /products/{product_id}.
+Implemented and verified. Teaching covers full-resource replacement, update input
+contracts, idempotency, ORM change tracking, committing updates, and preserving a
+resource identity. No assessment gate. Next lesson: delete a product.
 
 ## Completed
 
@@ -66,10 +65,16 @@ Next lesson: implement product updates with PUT.
   lookup with `Session.get()`, a safe 404 response, and a creation `Location` header.
 - [x] Lesson 9 verification: live 200, 404, and 422 responses, OpenAPI parameter and
   error contracts, a resolvable `Location` header, unchanged data, and session cleanup.
+- [x] Lesson 10 implementation: a complete Product update schema and PUT
+  /products/{product_id}, with primary-key lookup, explicit field assignment,
+  transaction commit, refreshed state, and a safe 404 response.
+- [x] Lesson 10 verification: live 200, 404, and 422 responses, repeated identical PUT
+  behavior, GET-visible and PostgreSQL-visible persistence, OpenAPI contracts, and
+  temporary-data cleanup.
 
 ## Next
 
-- [ ] Implement product update, then delete, in separate lessons.
+- [ ] Implement product deletion.
 - [ ] Introduce Category, then its relationship with Product in Stage 2.
 
 ## Stage Roadmap
@@ -124,6 +129,10 @@ Split large stages into focused lessons and review the project after each stage.
   numeric range validation, 422 versus 404, primary-key lookup with `Session.get()`,
   identity-map lookup behavior, `None` as a missing result, raising `HTTPException`,
   documenting error responses, and `Location` headers for newly created resources.
+- Lesson 10: PUT as complete replacement of editable resource state, operation-specific
+  input schemas, required update fields, resource identity versus mutable state,
+  SQLAlchemy attribute change tracking, UPDATE on commit, refresh after a write,
+  idempotent intended state, and PUT versus PATCH semantics.
 
 These record teaching coverage, not assessed mastery.
 
@@ -146,6 +155,7 @@ These record teaching coverage, not assessed mastery.
 - Docker/Compose: when coordinating multiple services becomes useful.
 - CI/CD, deployment, and the full professional README: as the application matures.
 - Refresh tokens: after access-token authentication is understood and a need appears.
+- PATCH and partial-update schemas: after a real need for partial product updates.
 - Service/repository layers: only if actual code complexity warrants them.
 
 ## Important Decisions
@@ -245,6 +255,16 @@ GET /products/{product_id} accepts only positive PostgreSQL `INTEGER` values, us
 Reason: `Session.get()` states the primary-key intent directly and can reuse an object
 already in the Session identity map. Invalid ID syntax or range receives 422, while a
 valid but absent ID receives 404. POST /products now links to this route with `Location`.
+
+### Use PUT for complete Product updates
+
+PUT /products/{product_id} accepts a `ProductUpdate` containing the complete editable
+Product state, loads the existing row, assigns each allowed field explicitly, commits,
+refreshes, and returns the same resource ID with HTTP 200. Omitted description becomes
+null, while name, price, and stock remain required. Reason: complete replacement gives
+PUT clear semantics, explicit assignment limits changes to approved fields, and sending
+the same valid request repeatedly leaves the resource in the same intended state.
+Partial PATCH behavior is deferred until it solves a concrete client need.
 
 ## Technical Debt to Revisit
 
