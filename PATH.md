@@ -9,15 +9,15 @@ Repository: https://github.com/ashish46781/Ecommerce_App
 
 ## Current Stage
 
-Stage 1 - Foundation: complete.
-Next stage: Stage 2 - Database design.
+Stage 2 - Database design.
+Stage 1 - Foundation is complete.
 
 ## Current Lesson
 
-Lesson 11: delete one product through DELETE /products/{product_id}.
-Implemented and verified. Teaching covers deletion state, DELETE idempotency,
-transactional hard deletion, empty 204 responses, and future referential-integrity
-decisions. Stage 1 review complete. Next lesson: introduce Category in Stage 2.
+Lesson 12: introduce the standalone Category persistence model and table.
+Implemented and verified. Teaching covers entity boundaries, named database constraints,
+database validation, unique indexes, and adding a new table with `create_all()`.
+Next lesson: adopt Alembic before altering Product to add the Category relationship.
 
 ## Completed
 
@@ -81,10 +81,18 @@ decisions. Stage 1 review complete. Next lesson: introduce Category in Stage 2.
 - [x] Stage 1 review: application setup, typed configuration, PostgreSQL integration,
   request-scoped sessions, Product mapping and schemas, and complete CRUD all work.
   The single-module design remains proportionate; planned debt stays on the roadmap.
+- [x] Lesson 12 implementation: standalone `categories` table with an identity primary
+  key, required `VARCHAR(100)` name, optional description, named nonblank-name check,
+  and named unique-name constraint.
+- [x] Lesson 12 verification: repeatable table creation, live PostgreSQL column and
+  constraint inspection, generated identity values, ORM insert/load/rollback, rejection
+  of blank and duplicate names, unique-index creation, and unchanged Product data.
 
 ## Next
 
-- [ ] Introduce Category, then its relationship with Product in Stage 2.
+- [ ] Adopt Alembic and baseline the current Product and Category schema before the
+  first alteration of an existing table.
+- [ ] Add the Category-to-Product relationship with a foreign key and useful indexes.
 
 ## Stage Roadmap
 
@@ -146,6 +154,10 @@ Split large stages into focused lessons and review the project after each stage.
 - Lesson 11: DELETE resource semantics, hard deletion, SQLAlchemy's deleted state,
   transaction commit for durable removal, 204 No Content, empty response bodies,
   repeated DELETE behavior, and future foreign-key and historical-record concerns.
+- Lesson 12: entity boundaries, table-level constraints, application validation versus
+  database enforcement, named `CHECK` and `UNIQUE` constraints, whitespace checks,
+  unique-constraint indexes, case-sensitive text uniqueness, and adding a new table
+  versus altering an existing table with `create_all()`.
 
 These record teaching coverage, not assessed mastery.
 
@@ -161,7 +173,6 @@ These record teaching coverage, not assessed mastery.
 ## Postponed Until Needed
 
 - Authentication/JWT and RBAC: after product/database foundations.
-- Alembic: when evolving an existing schema makes migrations useful.
 - pytest and test database architecture: when meaningful behavior needs protection.
 - Redis: after identifying a worthwhile caching use case.
 - BackgroundTasks or a task queue: when concrete background work exists.
@@ -290,15 +301,27 @@ successful deletion, and an empty response communicates that the requested remov
 complete. Hard deletion is sufficient while Product has no relationships; deletion,
 restriction, and archival rules must be revisited before orders depend on Product rows.
 
+### Give Category its own constrained table before relating it to Product
+
+Map `Category` to `categories` with an identity integer primary key, required unique
+`VARCHAR(100)` name, optional text description, and a named check that rejects blank or
+space-only names. PostgreSQL backs the unique constraint with a unique index. Reason:
+Category is an independent entity with its own identity and data rules, while named
+constraints produce clearer database errors and future migrations. Name uniqueness is
+currently case-sensitive. Add the relationship only after Alembic can safely alter the
+existing `products` table.
+
 ## Technical Debt to Revisit
 
 - Direct dependencies are pinned; full transitive dependency locking is deferred
   until reproducible CI/deployment setup. No pytest suite yet; first behavior was
   verified with temporary standard-library HTTP checks.
-- `create_all()` can create missing tables but cannot migrate an existing schema.
-  Introduce Alembic when the Product schema or relationships begin evolving.
+- `create_all()` created the new Category table but cannot add the upcoming foreign-key
+  column to the existing Product table. Adopt Alembic in the next lesson.
 - Product price and stock do not yet have database `CHECK` constraints; add and teach
-  those with database constraints in Stage 2. Category and timestamps are also deferred.
+  those with database constraints in Stage 2. Timestamps are also deferred.
+- Category is not exposed through the API or related to Product yet. Its unique name is
+  case-sensitive; decide normalization behavior when adding the Category API.
 - Product write operations are intentionally unauthenticated until users,
   authentication, and seller/admin authorization are introduced.
 - Product deletion currently removes the row permanently. Revisit foreign-key policies,
