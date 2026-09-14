@@ -14,91 +14,93 @@ Stage 1 - Foundation is complete.
 
 ## Current Lesson
 
-Stage 2 - Lesson 13: adopt Alembic and baseline the existing Product and Category schema.
+Stage 2 - Lesson 2: adopt Alembic and baseline the existing Product and Category schema.
 Implemented and verified. Teaching covers migration history, revisions, upgrade and
 downgrade functions, head and base, the version table, schema comparison, and stamping
 an audited existing database without recreating its tables.
-Next lesson: add the Category-to-Product relationship with an Alembic migration.
+Next lesson: Stage 2 - Lesson 3: add the Category-to-Product relationship with an
+Alembic migration.
 
 ## Completed
 
 - [x] Inspect the workspace: no existing files, code, tests, or Git history.
 - [x] Establish permanent teaching rules and the staged learning roadmap.
-- [x] Lesson 1 implementation: Python 3.13 virtual environment, minimal FastAPI app,
+- [x] Stage 1 - Lesson 1 implementation: Python 3.13 virtual environment, minimal FastAPI app,
   GET / JSON response, pinned direct dependencies, and Git initialized on main.
-- [x] Lesson 1 verification: real HTTP checks for root JSON (200), documentation
+- [x] Stage 1 - Lesson 1 verification: real HTTP checks for root JSON (200), documentation
   HTML (200), OpenAPI route definition, unknown route (404), and wrong method (405).
   Dependency compatibility and Python compilation checks passed.
-- [x] Lesson 1 explanation: server/application responsibilities and HTTP routing.
-- [x] Lesson 2 implementation: typed application name and debug flag in
+- [x] Stage 1 - Lesson 1 explanation: server/application responsibilities and HTTP routing.
+- [x] Stage 1 - Lesson 2 implementation: typed application name and debug flag in
   `app/config.py`, FastAPI integration, `.env.example`, and an ignored local `.env`.
-- [x] Lesson 2 verification: defaults, dotenv loading, environment overrides,
+- [x] Stage 1 - Lesson 2 verification: defaults, dotenv loading, environment overrides,
   boolean conversion, missing dotenv fallback, and invalid-value startup rejection.
   Real HTTP checks confirmed the configured name in JSON and documentation;
   existing route behavior, dependency compatibility, and compilation also passed.
-- [x] Lesson 3 implementation: PostgreSQL `ecommerce` database, limited
+- [x] Stage 1 - Lesson 3 implementation: PostgreSQL `ecommerce` database, limited
   `ecommerce_app` owner role, typed connection settings, Psycopg driver, and a
   reusable synchronous SQLAlchemy engine in `app/database.py`.
-- [x] Lesson 3 verification: live `SELECT 1`, server/database/user identity,
+- [x] Stage 1 - Lesson 3 verification: live `SELECT 1`, server/database/user identity,
   database ownership, restricted role privileges, password authentication,
   redacted URL rendering, dependency compatibility, compilation, and API behavior.
-- [x] Lesson 4 implementation: module-level `SessionFactory` and a `get_db()` yield
+- [x] Stage 1 - Lesson 4 implementation: module-level `SessionFactory` and a `get_db()` yield
   dependency that creates and closes one SQLAlchemy Session per FastAPI request.
-- [x] Lesson 4 verification: distinct sessions share the engine, execute real queries,
+- [x] Stage 1 - Lesson 4 verification: distinct sessions share the engine, execute real queries,
   and return connections to the pool after successful and failed HTTP requests.
-- [x] Lesson 5 implementation: shared declarative `Base`, a focused `Product` model,
+- [x] Stage 1 - Lesson 5 implementation: shared declarative `Base`, a focused `Product` model,
   and a temporary, repeatable command for creating the `products` table.
-- [x] Lesson 5 verification: PostgreSQL column types, nullability, identity primary
+- [x] Stage 1 - Lesson 5 verification: PostgreSQL column types, nullability, identity primary
   key, repeatable table creation, and an ORM insert/load/rollback cycle.
-- [x] Lesson 6 implementation: shared Product fields, a creation-input schema without
+- [x] Stage 1 - Lesson 6 implementation: shared Product fields, a creation-input schema without
   `id`, and a response schema that can read SQLAlchemy object attributes.
-- [x] Lesson 6 verification: valid parsing and serialization, generated JSON Schema,
+- [x] Stage 1 - Lesson 6 verification: valid parsing and serialization, generated JSON Schema,
   ORM-to-response conversion, and rejection of invalid, extra, or misleading values.
-- [x] Lesson 7 implementation: POST /products validates input, creates and commits a
+- [x] Stage 1 - Lesson 7 implementation: POST /products validates input, creates and commits a
   Product through the request-scoped Session, refreshes it, and returns a filtered
   201 response.
-- [x] Lesson 7 verification: live HTTP success and validation failures, OpenAPI request
+- [x] Stage 1 - Lesson 7 verification: live HTTP success and validation failures, OpenAPI request
   and response contracts, PostgreSQL persistence, route semantics, and session cleanup.
-- [x] Lesson 8 implementation: GET /products executes an ordered ORM select and returns
+- [x] Stage 1 - Lesson 8 implementation: GET /products executes an ordered ORM select and returns
   every Product through a list of `ProductResponse` objects.
-- [x] Lesson 8 verification: live empty and populated responses, ascending ID order,
+- [x] Stage 1 - Lesson 8 verification: live empty and populated responses, ascending ID order,
   exact response fields, existing POST behavior, OpenAPI, and connection cleanup.
-- [x] Lesson 9 implementation: a validated product-ID path parameter, primary-key
+- [x] Stage 1 - Lesson 9 implementation: a validated product-ID path parameter, primary-key
   lookup with `Session.get()`, a safe 404 response, and a creation `Location` header.
-- [x] Lesson 9 verification: live 200, 404, and 422 responses, OpenAPI parameter and
+- [x] Stage 1 - Lesson 9 verification: live 200, 404, and 422 responses, OpenAPI parameter and
   error contracts, a resolvable `Location` header, unchanged data, and session cleanup.
-- [x] Lesson 10 implementation: a complete Product update schema and PUT
+- [x] Stage 1 - Lesson 10 implementation: a complete Product update schema and PUT
   /products/{product_id}, with primary-key lookup, explicit field assignment,
   transaction commit, refreshed state, and a safe 404 response.
-- [x] Lesson 10 verification: live 200, 404, and 422 responses, repeated identical PUT
+- [x] Stage 1 - Lesson 10 verification: live 200, 404, and 422 responses, repeated identical PUT
   behavior, GET-visible and PostgreSQL-visible persistence, OpenAPI contracts, and
   temporary-data cleanup.
-- [x] Lesson 11 implementation: DELETE /products/{product_id} validates the ID, loads
+- [x] Stage 1 - Lesson 11 implementation: DELETE /products/{product_id} validates the ID, loads
   the Product, schedules its row for deletion, commits, returns an empty HTTP 204,
   and safely reports a missing Product with 404.
-- [x] Lesson 11 verification: live 204, 404, and 422 responses, an empty success body,
+- [x] Stage 1 - Lesson 11 verification: live 204, 404, and 422 responses, an empty success body,
   GET/list/database confirmation of removal, repeated DELETE behavior, OpenAPI
   contracts, and restoration of the original database row count.
 - [x] Stage 1 review: application setup, typed configuration, PostgreSQL integration,
   request-scoped sessions, Product mapping and schemas, and complete CRUD all work.
   The single-module design remains proportionate; planned debt stays on the roadmap.
-- [x] Lesson 12 implementation: standalone `categories` table with an identity primary
+- [x] Stage 2 - Lesson 1 implementation: standalone `categories` table with an identity primary
   key, required `VARCHAR(100)` name, optional description, named nonblank-name check,
   and named unique-name constraint.
-- [x] Lesson 12 verification: repeatable table creation, live PostgreSQL column and
+- [x] Stage 2 - Lesson 1 verification: repeatable table creation, live PostgreSQL column and
   constraint inspection, generated identity values, ORM insert/load/rollback, rejection
   of blank and duplicate names, unique-index creation, and unchanged Product data.
-- [x] Lesson 13 implementation: Alembic configuration loads the application's typed
+- [x] Stage 2 - Lesson 2 implementation: Alembic configuration loads the application's typed
   database URL and model metadata, an initial revision represents both existing tables,
   and the temporary `create_all()` bootstrap command has been removed.
-- [x] Lesson 13 verification: the live schema matched SQLAlchemy metadata before the
+- [x] Stage 2 - Lesson 2 verification: the live schema matched SQLAlchemy metadata before the
   one-time stamp, offline upgrade SQL recreated the complete baseline, the database is
   at migration head with no detected drift, Product data remained unchanged, repeated
   upgrade is a no-op, dependencies are healthy, and live API reads still return 200.
 
 ## Next
 
-- [ ] Add the Category-to-Product relationship with a foreign key and useful indexes.
+- [ ] Stage 2 - Lesson 3: add the Category-to-Product relationship with a foreign key
+  and useful indexes.
 
 ## Stage Roadmap
 
@@ -123,49 +125,49 @@ Split large stages into focused lessons and review the project after each stage.
 
 ## Concepts Learned
 
-- Lesson 1: virtual environments, server versus application, import targets,
+- Stage 1 - Lesson 1: virtual environments, server versus application, import targets,
   method/path routing, JSON serialization, and 404 versus 405 responses.
-- Lesson 2: configuration versus application logic, process environments, `.env`
+- Stage 1 - Lesson 2: configuration versus application logic, process environments, `.env`
   loading, type conversion/validation, source priority, startup settings lifetime,
   debug versus reload, and keeping local configuration outside Git.
-- Lesson 3: database server versus client, connection components, PostgreSQL roles
+- Stage 1 - Lesson 3: database server versus client, connection components, PostgreSQL roles
   and ownership, least privilege, SQLAlchemy dialect/driver selection, lazy engine
   connections, connection context management, and secret redaction versus encryption.
-- Lesson 4: engine versus connection versus session, `sessionmaker`, unit of work,
+- Stage 1 - Lesson 4: engine versus connection versus session, `sessionmaker`, unit of work,
   identity map, automatic transaction start, request-scoped dependency injection,
   session concurrency boundaries, explicit commit ownership, and guaranteed cleanup.
-- Lesson 5: declarative ORM mapping, `Base` and metadata, tables versus model classes,
+- Stage 1 - Lesson 5: declarative ORM mapping, `Base` and metadata, tables versus model classes,
   rows versus objects, columns versus attributes, primary keys, identity generation,
   nullability inferred from `Mapped` annotations, `Numeric`/`Decimal` for money,
   `create_all()` limitations, and ORM models versus API schemas.
-- Lesson 6: schemas as API boundaries, untrusted input, validation versus parsing,
+- Stage 1 - Lesson 6: schemas as API boundaries, untrusted input, validation versus parsing,
   serialization, required versus nullable fields, `Field` constraints, strict versus
   coercive parsing, rejecting extra fields, input/output schema separation, JSON Schema,
   and `from_attributes` for converting SQLAlchemy objects to responses.
-- Lesson 7: FastAPI path operations, request-body recognition, dependency injection with
+- Stage 1 - Lesson 7: FastAPI path operations, request-body recognition, dependency injection with
   `Annotated` and `Depends`, Pydantic-to-ORM conversion, transient and pending objects,
   automatic flush before commit, transaction durability, expiration and refresh,
   response-model filtering, 201 Created, and identity values that may contain gaps.
-- Lesson 8: collection endpoints, SQL `SELECT`, SQLAlchemy statement objects,
+- Stage 1 - Lesson 8: collection endpoints, SQL `SELECT`, SQLAlchemy statement objects,
   `Session.scalars()`, scalar values versus result rows, materializing results with
   `all()`, list response models, empty-list semantics, explicit `ORDER BY`, and read-only
   request transactions that require no commit.
-- Lesson 9: collection versus member resources, dynamic path segments, path parsing,
+- Stage 1 - Lesson 9: collection versus member resources, dynamic path segments, path parsing,
   numeric range validation, 422 versus 404, primary-key lookup with `Session.get()`,
   identity-map lookup behavior, `None` as a missing result, raising `HTTPException`,
   documenting error responses, and `Location` headers for newly created resources.
-- Lesson 10: PUT as complete replacement of editable resource state, operation-specific
+- Stage 1 - Lesson 10: PUT as complete replacement of editable resource state, operation-specific
   input schemas, required update fields, resource identity versus mutable state,
   SQLAlchemy attribute change tracking, UPDATE on commit, refresh after a write,
   idempotent intended state, and PUT versus PATCH semantics.
-- Lesson 11: DELETE resource semantics, hard deletion, SQLAlchemy's deleted state,
+- Stage 1 - Lesson 11: DELETE resource semantics, hard deletion, SQLAlchemy's deleted state,
   transaction commit for durable removal, 204 No Content, empty response bodies,
   repeated DELETE behavior, and future foreign-key and historical-record concerns.
-- Lesson 12: entity boundaries, table-level constraints, application validation versus
+- Stage 2 - Lesson 1: entity boundaries, table-level constraints, application validation versus
   database enforcement, named `CHECK` and `UNIQUE` constraints, whitespace checks,
   unique-constraint indexes, case-sensitive text uniqueness, and adding a new table
   versus altering an existing table with `create_all()`.
-- Lesson 13: schema migration versus ORM metadata, migration repositories, revisions,
+- Stage 2 - Lesson 2: schema migration versus ORM metadata, migration repositories, revisions,
   `upgrade()` and `downgrade()`, base and head, the `alembic_version` table, online versus
   offline migration mode, autogenerate as a review aid, schema drift, baselining an
   existing database, and the difference between `stamp` and `upgrade`.
