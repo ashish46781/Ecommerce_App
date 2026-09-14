@@ -14,10 +14,11 @@ Stage 1 - Foundation is complete.
 
 ## Current Lesson
 
-Lesson 12: introduce the standalone Category persistence model and table.
-Implemented and verified. Teaching covers entity boundaries, named database constraints,
-database validation, unique indexes, and adding a new table with `create_all()`.
-Next lesson: adopt Alembic before altering Product to add the Category relationship.
+Lesson 13: adopt Alembic and baseline the existing Product and Category schema.
+Implemented and verified. Teaching covers migration history, revisions, upgrade and
+downgrade functions, head and base, the version table, schema comparison, and stamping
+an audited existing database without recreating its tables.
+Next lesson: add the Category-to-Product relationship with an Alembic migration.
 
 ## Completed
 
@@ -87,11 +88,16 @@ Next lesson: adopt Alembic before altering Product to add the Category relations
 - [x] Lesson 12 verification: repeatable table creation, live PostgreSQL column and
   constraint inspection, generated identity values, ORM insert/load/rollback, rejection
   of blank and duplicate names, unique-index creation, and unchanged Product data.
+- [x] Lesson 13 implementation: Alembic configuration loads the application's typed
+  database URL and model metadata, an initial revision represents both existing tables,
+  and the temporary `create_all()` bootstrap command has been removed.
+- [x] Lesson 13 verification: the live schema matched SQLAlchemy metadata before the
+  one-time stamp, offline upgrade SQL recreated the complete baseline, the database is
+  at migration head with no detected drift, Product data remained unchanged, repeated
+  upgrade is a no-op, dependencies are healthy, and live API reads still return 200.
 
 ## Next
 
-- [ ] Adopt Alembic and baseline the current Product and Category schema before the
-  first alteration of an existing table.
 - [ ] Add the Category-to-Product relationship with a foreign key and useful indexes.
 
 ## Stage Roadmap
@@ -103,7 +109,8 @@ Next lesson: adopt Alembic before altering Product to add the Category relations
 4. Authorization: customer/seller/admin roles, permissions, and ownership checks.
 5. Cart: Cart/CartItem, quantities, related data, validation, ownership.
 6. Orders and inventory: checkout, order history/status, transactions, race conditions.
-7. Migrations: Alembic revisions and schema evolution when manual changes become painful.
+7. Migration discipline: continue using and reviewing Alembic revisions as the schema
+   evolves. Alembic was introduced in Stage 2 when the first table alteration became due.
 8. Testing: pytest, fixtures, isolated databases, authentication and business behavior.
 9. Redis: a justified product/category cache, TTL, stale data, and invalidation.
 10. Background work: confirmation/notification work using the simplest suitable approach.
@@ -158,6 +165,10 @@ Split large stages into focused lessons and review the project after each stage.
   database enforcement, named `CHECK` and `UNIQUE` constraints, whitespace checks,
   unique-constraint indexes, case-sensitive text uniqueness, and adding a new table
   versus altering an existing table with `create_all()`.
+- Lesson 13: schema migration versus ORM metadata, migration repositories, revisions,
+  `upgrade()` and `downgrade()`, base and head, the `alembic_version` table, online versus
+  offline migration mode, autogenerate as a review aid, schema drift, baselining an
+  existing database, and the difference between `stamp` and `upgrade`.
 
 These record teaching coverage, not assessed mastery.
 
@@ -167,6 +178,7 @@ These record teaching coverage, not assessed mastery.
 - FastAPI 0.141.1 and Uvicorn 0.52.4.
 - Pydantic Settings 2.15.0; python-dotenv is its dependency for reading `.env` files.
 - PostgreSQL 17.4, SQLAlchemy 2.0.52, and Psycopg 3.2.10.
+- Alembic 1.20.0 for versioned database schema migrations.
 - pip, `requirements.txt`, Git, and `.gitignore`.
 - Pydantic 2.13.5 now directly defines the Product API schemas.
 
@@ -242,12 +254,15 @@ optional description, exact `NUMERIC(10, 2)` price, and integer stock. Use Pytho
 timestamps, and business constraints will be introduced when their lessons can explain
 the problems they solve.
 
-### Bootstrap the first table before introducing migrations
+### Manage the database schema with Alembic
 
-Use `Base.metadata.create_all()` through `python -m app.create_tables` for the first
-table. It can create a missing table and can be rerun, but it does not modify an
-existing table to match later model changes. Replace this bootstrap workflow with
-Alembic when the schema begins evolving.
+Keep ordered migration revisions under `migrations/` and use `alembic upgrade head`
+to bring a database to the latest schema. The initial revision can create Product and
+Category on an empty database. The existing local database was inspected, compared with
+SQLAlchemy metadata, and stamped at that revision because its tables already matched;
+stamping recorded the version without running their `CREATE TABLE` operations. The old
+`create_all()` script was removed so fresh setup and later schema changes use one clear
+workflow. Future autogenerated revisions must be reviewed before they are applied.
 
 ### Use separate Product input and output schemas
 
@@ -316,8 +331,9 @@ existing `products` table.
 - Direct dependencies are pinned; full transitive dependency locking is deferred
   until reproducible CI/deployment setup. No pytest suite yet; first behavior was
   verified with temporary standard-library HTTP checks.
-- `create_all()` created the new Category table but cannot add the upcoming foreign-key
-  column to the existing Product table. Adopt Alembic in the next lesson.
+- The baseline downgrade removes both application tables and therefore their data.
+  Migration downgrade testing against an isolated database is deferred until the test
+  database setup exists; the generated downgrade SQL should always be reviewed first.
 - Product price and stock do not yet have database `CHECK` constraints; add and teach
   those with database constraints in Stage 2. Timestamps are also deferred.
 - Category is not exposed through the API or related to Product yet. Its unique name is
@@ -339,13 +355,14 @@ First-time setup:
 py -3.13 -m venv .venv
 .\.venv\Scripts\Activate.ps1
 python -m pip install -r requirements.txt
-python -m app.create_tables
+alembic upgrade head
 ```
 
 Normal development after opening a new terminal:
 
 ```powershell
 .\.venv\Scripts\Activate.ps1
+alembic upgrade head
 uvicorn app.main:app --reload
 ```
 
