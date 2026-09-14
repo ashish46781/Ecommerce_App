@@ -14,7 +14,7 @@ Stage 1 - Foundation is complete.
 
 ## Current Lesson
 
-Lesson 13: adopt Alembic and baseline the existing Product and Category schema.
+Stage 2 - Lesson 13: adopt Alembic and baseline the existing Product and Category schema.
 Implemented and verified. Teaching covers migration history, revisions, upgrade and
 downgrade functions, head and base, the version table, schema comparison, and stamping
 an audited existing database without recreating its tables.

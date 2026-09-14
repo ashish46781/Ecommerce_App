@@ -23,6 +23,10 @@ Do not require a quiz, teach-back, or proof of understanding before continuing.
 3. Give a short recap of the current stage, previous work, and next lesson.
 4. Choose the smallest logical next lesson from PATH.md. Do not jump ahead.
 
+Label every lesson with both numbers in the form `Stage N - Lesson M: topic`, including
+progress recaps, final teaching, and PATH.md. Keep the existing project-wide lesson
+sequence rather than restarting lesson numbers at each stage.
+
 AGENTS.md defines HOW we work. PATH.md defines WHERE we are. Code is the source of
 truth for implemented behavior; Git history shows how it evolved. Keep PATH.md a
 concise project map, not a diary or another teaching-rules document.
