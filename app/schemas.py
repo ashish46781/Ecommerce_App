@@ -3,6 +3,23 @@ from decimal import Decimal
 from pydantic import BaseModel, ConfigDict, Field
 
 
+class CategoryBase(BaseModel):
+    model_config = ConfigDict(extra="forbid", str_strip_whitespace=True)
+
+    name: str = Field(min_length=1, max_length=100)
+    description: str | None = Field(default=None, max_length=2000)
+
+
+class CategoryCreate(CategoryBase):
+    pass
+
+
+class CategoryResponse(CategoryBase):
+    model_config = ConfigDict(from_attributes=True)
+
+    id: int
+
+
 class ProductBase(BaseModel):
     model_config = ConfigDict(extra="forbid", str_strip_whitespace=True)
 

@@ -14,11 +14,11 @@ Stage 1 - Foundation is complete.
 
 ## Current Lesson
 
-Stage 2 - Lesson 4: enforce Product price and stock rules in PostgreSQL.
-Implemented and verified. Teaching covers defense in depth, database `CHECK`
-constraints, boundary values, migration preflight checks, explicit constraint names,
-and Alembic's optional name-based check-constraint detection.
-Next lesson: Stage 2 - Lesson 5: expose Category creation and listing through the API.
+Stage 2 - Lesson 5: expose Category creation and listing through the API.
+Implemented and verified. Teaching covers Category request/response schemas, collection
+creation and listing, HTTP 201/409/422 semantics, database-authoritative uniqueness,
+constraint-specific error translation, transaction rollback, and deterministic ordering.
+Next lesson: Stage 2 - Lesson 6: assign Products to existing Categories through the API.
 
 ## Completed
 
@@ -109,11 +109,18 @@ Next lesson: Stage 2 - Lesson 5: expose Category creation and listing through th
   successful upgrade/downgrade/re-upgrade, exact constraint inspection, acceptance of
   valid boundary values, rejection of invalid inserts and updates by constraint name,
   rollback cleanup, unchanged API validation, and restored Product row count.
+- [x] Stage 2 - Lesson 5 implementation: Category input and output schemas, POST
+  /categories with HTTP 201, GET /categories with stable ID ordering, and safe
+  duplicate-name translation from the named database constraint to HTTP 409.
+- [x] Stage 2 - Lesson 5 verification: schema parsing and ORM serialization, live empty and
+  populated lists, whitespace normalization, successful creation, case-sensitive name
+  behavior, duplicate conflict and post-rollback health, 422 validation failures,
+  OpenAPI contracts, unchanged Product behavior, and complete temporary-data cleanup.
 
 ## Next
 
-- [ ] Stage 2 - Lesson 5: add Category creation and listing API operations with request
-  validation and safe duplicate-name conflict handling.
+- [ ] Stage 2 - Lesson 6: allow Product API operations to assign an existing Category
+  safely and expose `category_id` in Product responses.
 
 ## Stage Roadmap
 
@@ -193,6 +200,11 @@ Split large stages into focused lessons and review the project after each stage.
   row-level Boolean `CHECK` expressions, boundary values, constraint validation of
   existing rows, named constraints, transaction failure and rollback, migration
   preflight checks, and the limits of name-based Alembic check detection.
+- Stage 2 - Lesson 5: Category API input and output boundaries, collection creation and
+  listing, 201 Created, 409 Conflict versus 422 validation failure, database-authoritative
+  uniqueness, check-then-insert race conditions, `IntegrityError`, constraint-specific
+  error translation, failed transaction rollback, exception chaining, deterministic
+  collection ordering, and case-sensitive category names.
 
 These record teaching coverage, not assessed mastery.
 
@@ -275,8 +287,8 @@ operation owns its commit decision, while cleanup rolls back unfinished work.
 Map `Product` to `products` with an identity integer primary key, required name,
 optional description, exact `NUMERIC(10, 2)` price, and integer stock. Use Python
 `Decimal` for prices to avoid binary floating-point rounding. The optional Category
-relationship is now mapped; timestamps and database price/stock constraints remain
-deferred until their focused lessons.
+relationship and database price/stock constraints are now mapped; timestamps remain
+deferred until they solve a concrete need.
 
 ### Manage the database schema with Alembic
 
@@ -373,6 +385,16 @@ bugs cannot store invalid values. The database is the final authority for persis
 state, while API validation provides the better client experience. Audit existing rows
 before adding a new check because PostgreSQL validates the constraint against them.
 
+### Let PostgreSQL decide Category-name conflicts
+
+POST /categories validates and normalizes the request, attempts the insert directly,
+and relies on `uq_categories_name` as the final uniqueness authority. If that exact
+constraint fails, roll back the failed transaction and return HTTP 409 with a stable,
+safe message; re-raise unrelated integrity failures rather than misreporting them.
+Reason: querying before insertion has a concurrency gap in which two requests can both
+see no matching row, while the database unique constraint decides atomically. GET
+/categories returns rows in ascending ID order and returns an empty list when none exist.
+
 ## Technical Debt to Revisit
 
 - Direct dependencies are pinned; full transitive dependency locking is deferred
@@ -383,10 +405,11 @@ before adding a new check because PostgreSQL validates the constraint against th
   database setup exists; the generated downgrade SQL should always be reviewed first.
 - Product timestamps remain deferred until they solve a concrete auditing or ordering
   requirement.
-- Category is related to Product in the database and ORM but is not exposed through the
-  API yet. Add Category creation/listing in Stage 2 - Lesson 5, then add product
-  assignment before deciding whether the relationship can become required. Existing
-  products have null `category_id`; Category-name uniqueness remains case-sensitive.
+- Category creation and listing are exposed, but Product API schemas do not yet accept
+  or return `category_id`. Add safe Product assignment in Stage 2 - Lesson 6 before
+  deciding whether the relationship can become required. Existing products have null
+  `category_id`; Category-name uniqueness remains case-sensitive. Category member,
+  update, and delete operations remain deferred until they solve a concrete client need.
 - Product write operations are intentionally unauthenticated until users,
   authentication, and seller/admin authorization are introduced.
 - Product deletion currently removes the row permanently. Revisit foreign-key policies,

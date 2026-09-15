@@ -2,12 +2,19 @@ from typing import Annotated
 
 from fastapi import Depends, FastAPI, HTTPException, Path, Response, status
 from sqlalchemy import select
+from sqlalchemy.exc import IntegrityError
 from sqlalchemy.orm import Session
 
 from app.config import settings
 from app.database import get_db
-from app.models import Product
-from app.schemas import ProductCreate, ProductResponse, ProductUpdate
+from app.models import Category, Product
+from app.schemas import (
+    CategoryCreate,
+    CategoryResponse,
+    ProductCreate,
+    ProductResponse,
+    ProductUpdate,
+)
 
 app = FastAPI(title=settings.app_name, debug=settings.debug)
 
@@ -15,6 +22,48 @@ app = FastAPI(title=settings.app_name, debug=settings.debug)
 @app.get("/")
 def read_root() -> dict[str, str]:
     return {"message": settings.app_name}
+
+
+@app.get("/categories", response_model=list[CategoryResponse])
+def list_categories(
+    session: Annotated[Session, Depends(get_db)],
+) -> list[Category]:
+    statement = select(Category).order_by(Category.id)
+    return list(session.scalars(statement).all())
+
+
+@app.post(
+    "/categories",
+    response_model=CategoryResponse,
+    status_code=status.HTTP_201_CREATED,
+    responses={
+        status.HTTP_409_CONFLICT: {
+            "description": "Category name already exists",
+        }
+    },
+)
+def create_category(
+    category_data: CategoryCreate,
+    session: Annotated[Session, Depends(get_db)],
+) -> Category:
+    category = Category(**category_data.model_dump())
+    session.add(category)
+
+    try:
+        session.commit()
+    except IntegrityError as error:
+        session.rollback()
+        diagnostics = getattr(error.orig, "diag", None)
+        constraint_name = getattr(diagnostics, "constraint_name", None)
+        if constraint_name == "uq_categories_name":
+            raise HTTPException(
+                status_code=status.HTTP_409_CONFLICT,
+                detail="Category name already exists",
+            ) from error
+        raise
+
+    session.refresh(category)
+    return category
 
 
 @app.get("/products", response_model=list[ProductResponse])
