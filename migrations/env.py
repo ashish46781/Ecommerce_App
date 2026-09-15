@@ -49,7 +49,12 @@ def run_migrations_online() -> None:
     """
     with engine.connect() as connection:
         context.configure(
-            connection=connection, target_metadata=target_metadata
+            connection=connection,
+            target_metadata=target_metadata,
+            autogenerate_plugins=[
+                "alembic.autogenerate.*",
+                "alembic.ext.checkconstraint_byname",
+            ],
         )
 
         with context.begin_transaction():

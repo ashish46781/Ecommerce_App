@@ -35,6 +35,13 @@ class Category(Base):
 
 class Product(Base):
     __tablename__ = "products"
+    __table_args__ = (
+        CheckConstraint("price > 0", name="ck_products_price_positive"),
+        CheckConstraint(
+            "stock >= 0",
+            name="ck_products_stock_non_negative",
+        ),
+    )
 
     id: Mapped[int] = mapped_column(Identity(), primary_key=True)
     name: Mapped[str] = mapped_column(String(200))
